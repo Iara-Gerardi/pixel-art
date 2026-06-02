@@ -1,5 +1,6 @@
 "use client";
 import React, { useMemo } from "react";
+import { computeBorderSet, hashCoord as _hashCoord } from "../../utils/islandRenderer";
 
 interface Props {
   bitmap: number[][];
@@ -12,21 +13,8 @@ interface Props {
   asciiChars?: string[];
 }
 
-/**
- * Deterministic hash of (row, col) → index in [0, mod).
- * Uses integer bit-mixing so each coordinate pair maps consistently
- * to a color without Math.random (avoids hydration mismatches).
- */
-function hashCoord(row: number, col: number, mod: number): number {
-  return (((row * 73856093) ^ (col * 19349663)) >>> 0) % mod;
-}
+const hashCoord = _hashCoord;
 
-const DIRECTIONS = [
-  [-1, 0],
-  [1, 0],
-  [0, -1],
-  [0, 1],
-] as const;
 
 export default function BorderIsland({
   bitmap,
@@ -39,31 +27,7 @@ export default function BorderIsland({
   const rows = bitmap.length;
   const cols = bitmap[0]?.length ?? 0;
 
-  /**
-   * borderSet contains "row,col" keys for every land cell that has at least
-   * one adjacent water cell (including grid edges treated as water).
-   */
-  const borderSet = useMemo(() => {
-    const set = new Set<string>();
-
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols; j++) {
-        if (bitmap[i][j] !== 1) continue;
-
-        const isBorder = DIRECTIONS.some(([di, dj]) => {
-          const ni = i + di;
-          const nj = j + dj;
-          // Out-of-bounds counts as water
-          if (ni < 0 || ni >= rows || nj < 0 || nj >= cols) return true;
-          return bitmap[ni][nj] === 0;
-        });
-
-        if (isBorder) set.add(`${i},${j}`);
-      }
-    }
-
-    return set;
-  }, [bitmap, rows, cols]);
+  const borderSet = useMemo(() => computeBorderSet(bitmap, rows, cols), [bitmap, rows, cols]);
 
   return (
     <div className={`flex items-center justify-center ${className}`}>
@@ -94,7 +58,7 @@ export default function BorderIsland({
               return (
                 <span
                   key={key}
-                  className={`text-sm!`}
+                  className={`text-sm`}
                   style={isBorderCell ? { color, userSelect: "none" } : undefined}
                 >
                   {char}

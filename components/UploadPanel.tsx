@@ -30,6 +30,7 @@ export default function UploadPanel({ config, onConfigChange, onGridChange, setI
   const [rows, setRows] = useState(64);
   const [cols, setCols] = useState(64);
   const [threshold, setThreshold] = useState(128);
+  const [invert, setInvert] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +58,7 @@ export default function UploadPanel({ config, onConfigChange, onGridChange, setI
       formData.append("rows", String(rows));
       formData.append("cols", String(cols));
       formData.append("threshold", String(threshold));
+      formData.append("invert", String(invert));
 
       const res = await fetch("/api/pixelate", { method: "POST", body: formData });
       const data = await res.json();
@@ -168,6 +170,15 @@ export default function UploadPanel({ config, onConfigChange, onGridChange, setI
               onChange={(e) => setThreshold(parseInt(e.target.value))}
               className="w-full accent-indigo-500"
             />
+            <label className="mt-1 flex items-center gap-2 cursor-pointer select-none text-xs text-white/40">
+              <input
+                type="checkbox"
+                checked={invert}
+                onChange={(e) => setInvert(e.target.checked)}
+                className="accent-indigo-500"
+              />
+              Invert
+            </label>
           </div>
         )}
 

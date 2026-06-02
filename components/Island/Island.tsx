@@ -1,5 +1,6 @@
 "use client";
 import React, { useMemo } from "react";
+import { computeBorderMap } from "../../utils/islandRenderer";
 
 type renderType =
   | "default"
@@ -33,25 +34,7 @@ function Island({
     return val ? "2px solid #372aac" : "0px solid #ddd";
   };
 
-  const borderMap = useMemo(() => {
-    const map: Record<string, Record<string, boolean>> = {};
-
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols; j++) {
-        if (bitmap[i][j] === 0) continue;
-
-        const key = `${i},${j}`;
-        map[key] = {
-          top: i > 0 ? bitmap[i - 1][j] === 0 : true,
-          bottom: i < rows - 1 ? bitmap[i + 1][j] === 0 : true,
-          left: j > 0 ? bitmap[i][j - 1] === 0 : true,
-          right: j < cols - 1 ? bitmap[i][j + 1] === 0 : true,
-        };
-      }
-    }
-
-    return map;
-  }, [bitmap, rows, cols]);
+  const borderMap = useMemo(() => computeBorderMap(bitmap, rows, cols), [bitmap, rows, cols]);
 
   return (
     <div className={`flex items-center justify-center p-5 ${className}`}>

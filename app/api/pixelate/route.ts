@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
     const rows = parseInt(formData.get("rows") as string, 10);
     const cols = parseInt(formData.get("cols") as string, 10);
     const threshold = parseInt((formData.get("threshold") as string) ?? "128", 10);
+    const invert = (formData.get("invert") as string) === "true";
 
     if (!imageFile || isNaN(rows) || isNaN(cols)) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -78,6 +79,7 @@ export async function POST(req: NextRequest) {
         } else {
           brightness = intToRGBA(hex as number).r;
         }
+        if (invert) brightness = 255 - brightness;
         row.push(brightness < threshold ? 1 : 0);
       }
       grid.push(row);
